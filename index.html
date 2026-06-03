@@ -788,32 +788,29 @@ function initLock() {
 
   buildPatternGrid('lockPatternWrap', pattern => {
     const auth = S.get('auth');
-    if (hashStr(pattern.join('')) === auth.pattern) {
-      patternVerified = true;
-      document.getElementById('lockPatternWrap').style.display = 'none';
-      document.getElementById('lockPinWrap').style.display = 'block';
-      document.getElementById('lockPrompt').textContent = 'Enter your PIN';
-      document.getElementById('lockError').textContent = '';
-      buildPinPad('lockPinWrap', pin => {
-        if (!patternVerified) return; // extra guard
-        if (hashStr(pin.join('')) === auth.pin) {
-          patternVerified = false;
-          lockFails = 0;
-          document.getElementById('lockScreen').style.display = 'none';
-          initApp();
-        } else {
-          lockFails++;
-          patternVerified = false;
-          document.getElementById('lockError').textContent = 'Wrong PIN. Try again.';
-          setTimeout(() => initLock(), 800);
-        }
-      });
-    } else {
-      patternVerified = false;
+    if (hashStr(pattern.join('')) !== auth.pattern) {
       lockFails++;
       document.getElementById('lockError').textContent = 'Pattern incorrect. Try again.';
-      setTimeout(() => initLock(), 800);
+      setTimeout(() => initLock(), 900);
+      return;
     }
+    document.getElementById('lockPatternWrap').style.display = 'none';
+    document.getElementById('lockPinWrap').style.display = 'block';
+    document.getElementById('lockPinWrap').innerHTML = '';
+    document.getElementById('lockPrompt').textContent = 'Enter your PIN';
+    document.getElementById('lockError').textContent = '';
+    buildPinPad('lockPinWrap', pin => {
+      if (hashStr(pin.join('')) === auth.pin) {
+        lockFails = 0;
+        document.getElementById('lockScreen').style.display = 'none';
+        initApp();
+      } else {
+        lockFails++;
+        document.getElementById('lockError').textContent = 'Wrong PIN. Try again.';
+        document.getElementById('lockPinWrap').innerHTML = '';
+        setTimeout(() => initLock(), 900);
+      }
+    });
   });
 }
 
